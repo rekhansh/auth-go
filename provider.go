@@ -10,7 +10,7 @@ import (
 type AuthProvider interface {
 	GetIssuer() string
 	RegisterRoutes(router *mux.Router)
-	ValidateAuthToken(token string) (jwt.Token, error)
+	ValidateToken(token string) (jwt.Token, error)
 }
 
 func (a *AuthService) RegisterProvider(provider AuthProvider) error {

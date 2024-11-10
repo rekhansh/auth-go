@@ -1,4 +1,4 @@
-package mockokta
+package mockoidc
 
 import (
 	"encoding/json"
@@ -21,7 +21,7 @@ func generateOpenIDConfig(baseURL string) config.OpenIDConfig {
 	}
 }
 
-func HostMockOktaServer() *httptest.Server {
+func HostMockOIDCServer() *httptest.Server {
 	serverMux := http.NewServeMux()
 	serverMux.HandleFunc(wellKnownUrlPath, openIDConfigHandler)
 	serverMux.HandleFunc(jwksUrlPath, generateJWKHandler)

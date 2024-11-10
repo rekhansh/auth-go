@@ -1,4 +1,4 @@
-package okta
+package keyset
 
 import (
 	"context"
@@ -8,40 +8,18 @@ import (
 	"net/http"
 
 	"github.com/lestrrat-go/jwx/jwk"
-	"github.com/lestrrat-go/jwx/jwt"
 	"github.com/rekhansh/goauth/config"
 )
 
-func (o *OktaAuthProvider) ValidateAuthToken(tokenString string) (jwt.Token, error) {
-	// Get KeySet
-	keyset, err := o.getKeySet()
-	if err != nil {
-		return nil, err
-	}
-
-	// jwt
-	validator := jwt.ValidatorFunc(func(_ context.Context, t jwt.Token) error {
-		// if time.Now().Month() != 8 {
-		// 	return fmt.Errorf(`tokens are only valid during August!`)
-		// }
-		return nil
-	})
-
-	// Get Token
-	token, err := jwt.Parse(
-		[]byte(tokenString),
-		jwt.WithKeySet(keyset),
-		jwt.WithIssuer(o.Issuer),
-		jwt.WithValidator(validator),
-	)
-	if err != nil {
-		fmt.Printf("failed to parse payload: %s\n", err)
-	}
-
-	return token, nil
+type OidcKeysetDiscovery struct {
+	BaseUrl string
 }
 
-func (o *OktaAuthProvider) getKeySet() (jwk.Set, error) {
+const (
+	wellKnownUrlPath = "/.well-known/openid-configuration"
+)
+
+func (o *OidcKeysetDiscovery) GetKeyset() (jwk.Set, error) {
 	// TODO -- Cache
 
 	// Get Url
@@ -60,8 +38,8 @@ func (o *OktaAuthProvider) getKeySet() (jwk.Set, error) {
 	return keyset, nil
 }
 
-func (o *OktaAuthProvider) fetchKeysetUrl() (string, error) {
-	metadataUrl := o.Issuer + wellKnownUrlPath
+func (o *OidcKeysetDiscovery) fetchKeysetUrl() (string, error) {
+	metadataUrl := o.BaseUrl + wellKnownUrlPath
 	resp, err := http.Get(metadataUrl)
 	if err != nil {
 		return "", fmt.Errorf("failed to fetch metadata: %w", err)
