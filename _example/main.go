@@ -5,15 +5,15 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/rekhansh/goauth"
-	"github.com/rekhansh/goauth/provider/jwt"
-	"github.com/rekhansh/goauth/provider/oidc"
+	"github.com/rekhansh/auth"
+	"github.com/rekhansh/auth/provider/jwt"
+	"github.com/rekhansh/auth/provider/oidc"
 )
 
-var authService *goauth.AuthService
+var authService *auth.AuthService
 
 func initAuthService(pathPrefix string) error {
-	authService = goauth.New(&goauth.AuthServiceConfig{
+	authService = auth.New(&auth.AuthServiceConfig{
 		URLPrefix: pathPrefix,
 	})
 

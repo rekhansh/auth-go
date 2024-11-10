@@ -3,7 +3,7 @@ package oidc
 import (
 	"testing"
 
-	mockoidc "github.com/rekhansh/goauth/provider/oidc/mock"
+	mockoidc "github.com/rekhansh/auth/provider/oidc/mock"
 	"github.com/stretchr/testify/assert"
 )
 

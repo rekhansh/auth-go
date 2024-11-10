@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	"github.com/lestrrat-go/jwx/jwk"
-	"github.com/rekhansh/goauth/config"
+	"github.com/rekhansh/auth/config"
 )
 
 type OidcKeysetDiscovery struct {

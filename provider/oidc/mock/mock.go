@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 
 	"github.com/lestrrat-go/jwx/jwk"
-	"github.com/rekhansh/goauth/config"
+	"github.com/rekhansh/auth/config"
 )
 
 const (

@@ -2,11 +2,11 @@ module github.com/rekhansh/goauth/_example
 
 go 1.23.2
 
-replace github.com/rekhansh/goauth => ../
+replace github.com/rekhansh/auth => ../
 
 require (
 	github.com/gorilla/mux v1.8.1
-	github.com/rekhansh/goauth v0.0.0-00010101000000-000000000000
+	github.com/rekhansh/auth v0.0.0-00010101000000-000000000000
 )
 
 require (

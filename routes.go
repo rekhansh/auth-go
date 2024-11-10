@@ -1,4 +1,4 @@
-package goauth
+package auth
 
 import "github.com/gorilla/mux"
 

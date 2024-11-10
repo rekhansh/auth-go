@@ -1,4 +1,4 @@
-module github.com/rekhansh/goauth
+module github.com/rekhansh/auth
 
 go 1.23
 

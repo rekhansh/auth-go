@@ -3,7 +3,7 @@ package oidc
 import (
 	"fmt"
 
-	"github.com/rekhansh/goauth/keyset"
+	"github.com/rekhansh/auth/keyset"
 )
 
 type OidcAuthProvider struct {
