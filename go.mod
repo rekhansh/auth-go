@@ -5,7 +5,7 @@ go 1.23
 require (
 	github.com/gorilla/mux v1.8.1
 	github.com/lestrrat-go/jwx v1.2.30
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 )
 
 require (
