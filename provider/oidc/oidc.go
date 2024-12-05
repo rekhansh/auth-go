@@ -3,6 +3,7 @@ package oidc
 import (
 	"fmt"
 
+	"github.com/lestrrat-go/jwx/v3/jwt"
 	"github.com/rekhansh/auth/keyset"
 )
 
@@ -11,6 +12,7 @@ type OidcAuthProvider struct {
 }
 
 type OidcAuthProviderConfig struct {
+	ID              string
 	Issuer          string
 	KeysetDiscovery keyset.KeysetDiscovery
 }
@@ -35,6 +37,13 @@ func NewOidcProvider(config *OidcAuthProviderConfig) (*OidcAuthProvider, error) 
 	return oidcAuthProvider, nil
 }
 
-func (o *OidcAuthProvider) GetIssuer() string {
+func (o *OidcAuthProvider) GetID() string {
+	if o.ID != "" {
+		return o.ID
+	}
 	return o.Issuer
+}
+
+func (o *OidcAuthProvider) IsTokenSupported(token jwt.Token) bool {
+	return false
 }

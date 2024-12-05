@@ -7,17 +7,13 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/lestrrat-go/jwx/jwk"
-	"github.com/rekhansh/auth/config"
+	"github.com/lestrrat-go/jwx/v3/jwk"
+	oidcutils "github.com/rekhansh/auth/utils/oidc"
 )
 
 type OidcKeysetDiscovery struct {
 	BaseUrl string
 }
-
-const (
-	wellKnownUrlPath = "/.well-known/openid-configuration"
-)
 
 func (o *OidcKeysetDiscovery) GetKeyset() (jwk.Set, error) {
 	// TODO -- Cache
@@ -39,7 +35,7 @@ func (o *OidcKeysetDiscovery) GetKeyset() (jwk.Set, error) {
 }
 
 func (o *OidcKeysetDiscovery) fetchKeysetUrl() (string, error) {
-	metadataUrl := o.BaseUrl + wellKnownUrlPath
+	metadataUrl := o.BaseUrl + oidcutils.OIDCEndpointWelKnownOpenIDConfiguration
 	resp, err := http.Get(metadataUrl)
 	if err != nil {
 		return "", fmt.Errorf("failed to fetch metadata: %w", err)
@@ -55,7 +51,7 @@ func (o *OidcKeysetDiscovery) fetchKeysetUrl() (string, error) {
 		return "", fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	var openidconfig config.OpenIDConfig
+	var openidconfig oidcutils.OpenIDConfig
 
 	if err := json.Unmarshal(body, &openidconfig); err != nil {
 		return "", fmt.Errorf("failed to unmarshal metadata: %w", err)

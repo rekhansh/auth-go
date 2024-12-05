@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/rekhansh/auth"
@@ -41,7 +42,7 @@ func registerOidcProvider() error {
 	return nil
 }
 
-func main() {
+func setupRouter() *mux.Router {
 	// register auth routers to server
 	router := mux.NewRouter()
 
@@ -49,20 +50,28 @@ func main() {
 	initAuthService("/auth")
 	authService.RegisterRoutes(router)
 
-	// Other Requests
-	// Without Auth
+	// 2. Ping Endpoint
 	router.HandleFunc("/ping", PingHandler)
 
-	// With Auth without middleware
-	router.HandleFunc("/api/v1/userinfo", GetUserInfoWithAuthCheckHandler)
+	// 3. Public Endpoint
+	router.HandleFunc("/api/v1/public", PingHandler)
 
-	// With Auth with Middleware
-	subRoute := router.PathPrefix("/api/v1").Subrouter()
+	// 4. Private Endpoint
+	// 4.1 Private Endpoint using Middleware
+	subRoute := router.PathPrefix("/api/v1/private").Subrouter()
 	subRoute.Use(authService.AuthMiddleware)
-	subRoute.HandleFunc("/user", GetUserInfoWithoutAuthCheckHandler)
-	subRoute.HandleFunc("/test", GetAuthenicatedResponseHandler)
+	subRoute.HandleFunc("/user-with-middleware", GetUserInfoHandler)
+	subRoute.HandleFunc("/test", GetUserInfoHandler)
 
+	// 4.2 Private Endpoint without Middleware
+	router.HandleFunc("/api/v1/private/user-without-middleware", GetUserInfoHandler)
+
+	return router
+}
+
+func main() {
 	// Serve
+	router := setupRouter()
 	http.ListenAndServe(":80", router)
 }
 
@@ -77,35 +86,35 @@ func PingHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func GetUserInfoWithAuthCheckHandler(w http.ResponseWriter, r *http.Request) {
+func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 	response := map[string]interface{}{
-		"message": "with auth check",
+		"message": "user info",
 	}
 
-	// Check Auth - TODO
-	// token, err := authService.ValidateToken("")
-
-	// Encode the response as JSON
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func GetUserInfoWithoutAuthCheckHandler(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"message": "wihtout auth check",
+	tokenStr := ""
+	tokenHeader := r.Header.Get("Authorization")
+	splitToken := strings.Split(tokenHeader, " ")
+	if len(splitToken) == 2 {
+		tokenStr = splitToken[1]
+	}
+	if tokenStr == "" {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "missing token",
+		})
+	}
+	token, err := authService.ValidateToken(tokenStr)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "invalid token",
+		})
+		return
 	}
 
-	//
-
-	// Encode the response as JSON
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func GetAuthenicatedResponseHandler(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"message": "test",
-	}
+	response["token"] = token
 
 	// Encode the response as JSON
 	w.Header().Set("Content-Type", "application/json")

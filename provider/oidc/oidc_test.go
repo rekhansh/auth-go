@@ -7,19 +7,31 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestOidcKeySet(t *testing.T) {
+func TestOIDCProvider(t *testing.T) {
 
 	// Create a new HTTP test server
-	server := mockoidc.HostMockOIDCServer()
-	defer server.Close()
+	mockServer := mockoidc.NewOIDCMockServer(nil)
 
-	oidcAuthProvider, err := NewOidcProvider(&OidcAuthProviderConfig{
-		Issuer: server.URL,
+	testServer := mockServer.GetTestServer()
+	defer testServer.Close()
+
+	// Provider
+	oidcProvider, err := NewOidcProvider(&OidcAuthProviderConfig{
+		Issuer: testServer.URL,
 	})
 	assert.Nil(t, err)
+	assert.NotNil(t, oidcProvider)
 
-	// Test
-	keyset, err := oidcAuthProvider.getKeySet()
-	assert.Nil(t, err, "error is not empty")
-	assert.NotNil(t, keyset, "keyset is empty")
+	// Generate Token
+	t.Run("TestTokenGeneration", func(t *testing.T) {
+		token, err := mockServer.GenerateTestToken(nil)
+		assert.Nil(t, err)
+
+		t.Run("Validate Token", func(t *testing.T) {
+			jwtToken, err := oidcProvider.ValidateToken(token)
+			assert.Nil(t, err)
+			assert.NotNil(t, jwtToken)
+		})
+	})
+	//
 }
