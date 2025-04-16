@@ -1,4 +1,4 @@
-# Auth Servive for GoLang
+# Auth Servive for GoLang [![codecov](https://codecov.io/gh/rekhansh/auth-go/graph/badge.svg?token=DI2UU7QG1J)](https://codecov.io/gh/rekhansh/auth-go) [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=rekhansh_auth-go&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=rekhansh_auth-go) [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=rekhansh_auth-go&metric=bugs)](https://sonarcloud.io/summary/new_code?id=rekhansh_auth-go) [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=rekhansh_auth-go&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=rekhansh_auth-go) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=rekhansh_auth-go&metric=coverage)](https://sonarcloud.io/summary/new_code?id=rekhansh_auth-go) 
 Auth Service
 
 ### Prodivers
