@@ -2,7 +2,7 @@ package auth
 
 type AuthService struct {
 	*AuthServiceConfig
-	providers []AuthProvider
+	providers map[string]AuthProvider
 }
 
 type AuthServiceConfig struct {
@@ -22,6 +22,7 @@ func New(authConfig *AuthServiceConfig) *AuthService {
 
 	auth := &AuthService{
 		AuthServiceConfig: authConfig,
+		providers:         make(map[string]AuthProvider),
 	}
 	return auth
 }

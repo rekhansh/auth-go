@@ -7,8 +7,8 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/rekhansh/auth"
-	"github.com/rekhansh/auth/provider/jwt"
-	"github.com/rekhansh/auth/provider/oidc"
+	"github.com/rekhansh/auth/provider/core/jwt"
+	"github.com/rekhansh/auth/provider/core/oidc"
 )
 
 var authService *auth.AuthService
