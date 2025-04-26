@@ -1,5 +1,9 @@
 package auth
 
+const (
+	DefaultURLPrefix = "/auth"
+)
+
 type AuthService struct {
 	*AuthServiceConfig
 	providers map[string]AuthProvider
