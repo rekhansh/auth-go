@@ -57,10 +57,6 @@ func getUnverifiedToken(tokenString string) (jwt.Token, error) {
 
 // ValidateTokenClaims validates the claims of a JWT token which are required for authentication.
 func validateTokenClaims(token jwt.Token) error {
-	if token == nil {
-		return fmt.Errorf(ErrorUnableToParseToken)
-	}
-
 	// Validate Issuer
 	issuer, ok := token.Issuer()
 	if !ok || issuer == "" {

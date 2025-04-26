@@ -17,6 +17,24 @@ func TestTokenGenerate(t *testing.T) {
 		log.Fatalf("failed to generate key: %s", err)
 	}
 
+	t.Run("Generate Token Key Error", func(t *testing.T) {
+		claims := map[string]interface{}{}
+		token, err := jwtutils.GenerateToken(claims, "key")
+		if err == nil {
+			t.Errorf("Expected error, got token: %s", token)
+		}
+	})
+
+	t.Run("Generate Token Claim Error", func(t *testing.T) {
+		claims := map[string]interface{}{
+			"iss": 2,
+		}
+		token, err := jwtutils.GenerateToken(claims, key)
+		if err == nil {
+			t.Errorf("Expected error, got token: %s", token)
+		}
+	})
+
 	// Generate a token
 	t.Run("Generate Empty Token", func(t *testing.T) {
 		claims := map[string]interface{}{}
