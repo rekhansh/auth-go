@@ -45,5 +45,9 @@ func (o *OidcAuthProvider) GetID() string {
 }
 
 func (o *OidcAuthProvider) IsTokenSupported(token jwt.Token) bool {
+	issuer, ok := token.Issuer()
+	if ok && issuer == o.Issuer {
+		return true
+	}
 	return false
 }
