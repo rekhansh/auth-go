@@ -3,6 +3,7 @@ package keyset
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -11,55 +12,61 @@ import (
 	oidcutils "github.com/rekhansh/auth/utils/oidc"
 )
 
+const (
+	ErrorEmptyBaseUrl          = "base url is empty"
+	ErrorFailedToFetchMetadata = "failed to fetch metadata:"
+	ErrorUnexpectedStatusCode  = "unexpected status code:"
+	ErrorFailedToReadBody      = "failed to read response body:"
+	ErrorFailedToUnmarshal     = "failed to unmarshal metadata:"
+	ErrorKeysetUrlEmpty        = "keyset url empy"
+	ErrorFailedToFetchKeyset   = "failed to fetch keyset:"
+)
+
 type OidcKeysetDiscovery struct {
 	BaseUrl string
 }
 
 func (o *OidcKeysetDiscovery) GetKeyset() (jwk.Set, error) {
-	// TODO -- Cache
+	if o.BaseUrl == "" {
+		return nil, errors.New(ErrorEmptyBaseUrl)
+	}
 
-	// Get Url
-	keysetUrl, err := o.fetchKeysetUrl()
+	// Get Metadata
+	metadataUrl := o.BaseUrl + oidcutils.OIDCEndpointWelKnownOpenIDConfiguration
+	resp, err := http.Get(metadataUrl)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(ErrorFailedToFetchMetadata+" %v", err)
+	}
+	defer resp.Body.Close()
+
+	// response status code check
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(ErrorUnexpectedStatusCode+" %v", resp.StatusCode)
+	}
+
+	// read response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf(ErrorFailedToReadBody+" %v", err)
+	}
+
+	// unmarshal response body
+	var openidconfig oidcutils.OpenIDConfig
+
+	if err := json.Unmarshal(body, &openidconfig); err != nil {
+		return nil, fmt.Errorf(ErrorFailedToUnmarshal+" %v", err)
+	}
+
+	if openidconfig.JwksURI == "" {
+		return nil, errors.New(ErrorKeysetUrlEmpty)
 	}
 
 	// getkeyset
-	keyset, err := jwk.Fetch(context.Background(), keysetUrl)
+	keyset, err := jwk.Fetch(context.Background(), openidconfig.JwksURI)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(ErrorFailedToFetchKeyset+" %v", err)
 	}
 
 	// return keyset
 	return keyset, nil
-}
-
-func (o *OidcKeysetDiscovery) fetchKeysetUrl() (string, error) {
-	metadataUrl := o.BaseUrl + oidcutils.OIDCEndpointWelKnownOpenIDConfiguration
-	resp, err := http.Get(metadataUrl)
-	if err != nil {
-		return "", fmt.Errorf("failed to fetch metadata: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-	}
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", fmt.Errorf("failed to read response body: %w", err)
-	}
-
-	var openidconfig oidcutils.OpenIDConfig
-
-	if err := json.Unmarshal(body, &openidconfig); err != nil {
-		return "", fmt.Errorf("failed to unmarshal metadata: %w", err)
-	}
-
-	if openidconfig.JwksURI == "" {
-		return "", fmt.Errorf("keyset url not found")
-	}
-
-	return openidconfig.JwksURI, nil
 }

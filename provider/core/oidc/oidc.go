@@ -1,10 +1,14 @@
 package oidc
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/lestrrat-go/jwx/v3/jwt"
 	"github.com/rekhansh/auth/keyset"
+)
+
+const (
+	ErrorIssuerRequired = "issuer is required"
 )
 
 type OidcAuthProvider struct {
@@ -22,7 +26,7 @@ func NewOidcProvider(config *OidcAuthProviderConfig) (*OidcAuthProvider, error) 
 		config = &OidcAuthProviderConfig{}
 	}
 	if config.Issuer == "" {
-		return nil, fmt.Errorf("issuer is required")
+		return nil, errors.New(ErrorIssuerRequired)
 	}
 
 	if config.KeysetDiscovery == nil {
@@ -45,5 +49,9 @@ func (o *OidcAuthProvider) GetID() string {
 }
 
 func (o *OidcAuthProvider) IsTokenSupported(token jwt.Token) bool {
+	issuer, ok := token.Issuer()
+	if ok && issuer == o.Issuer {
+		return true
+	}
 	return false
 }

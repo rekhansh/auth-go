@@ -1,18 +1,24 @@
-package auth
+package auth_test
 
 import (
-	"net/http/httptest"
 	"testing"
 
-	"github.com/gorilla/mux"
+	"github.com/rekhansh/auth"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAuthService(t *testing.T) {
-	// register auth routers to server
-	router := mux.NewRouter()
-	authService := New(&AuthServiceConfig{})
-	assert.NotNil(t, authService)
-	server := httptest.NewServer(router)
-	defer server.Close()
+
+	t.Run("Test Nil Config", func(t *testing.T) {
+		authService := auth.New(nil)
+		assert.NotNil(t, authService)
+		assert.NotNil(t, authService.AuthServiceConfig)
+	})
+
+	// Test Service Defaults
+	t.Run("Test Defaults", func(t *testing.T) {
+		authService := auth.New(&auth.AuthServiceConfig{})
+		assert.NotNil(t, authService)
+		assert.Equal(t, authService.URLPrefix, auth.DefaultURLPrefix)
+	})
 }

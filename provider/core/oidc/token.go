@@ -1,15 +1,25 @@
 package oidc
 
 import (
+	"errors"
 	"fmt"
 
-	"github.com/lestrrat-go/jwx/v3/jwk"
 	"github.com/lestrrat-go/jwx/v3/jwt"
+)
+
+const (
+	ErrorKeysetNotFound     = "keyset not found"
+	ErrorFailedToParseToken = "failed to parse token"
 )
 
 func (o *OidcAuthProvider) ValidateToken(tokenString string) (jwt.Token, error) {
 	// Get KeySet
-	keyset, err := o.getKeySet()
+	if o.KeysetDiscovery == nil {
+		return nil, errors.New(ErrorKeysetNotFound)
+	}
+
+	// Get Keyset
+	keyset, err := o.KeysetDiscovery.GetKeyset()
 	if err != nil {
 		return nil, err
 	}
@@ -17,15 +27,8 @@ func (o *OidcAuthProvider) ValidateToken(tokenString string) (jwt.Token, error) 
 	// Get Token
 	token, err := jwt.Parse([]byte(tokenString), jwt.WithKeySet(keyset))
 	if err != nil {
-		fmt.Printf("failed to parse payload: %s\n", err)
+		return nil, fmt.Errorf("%s: %w", ErrorFailedToParseToken, err)
 	}
 
 	return token, nil
-}
-
-func (o *OidcAuthProvider) getKeySet() (jwk.Set, error) {
-	if o.KeysetDiscovery != nil {
-		return o.KeysetDiscovery.GetKeyset()
-	}
-	return nil, fmt.Errorf("unable to get keys to validate")
 }
