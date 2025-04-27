@@ -95,7 +95,6 @@ func TestOidcKeySetDiscovery(t *testing.T) {
 		// Start a mock server to simulate the OIDC discovery endpoint
 		mux := http.NewServeMux()
 		mux.HandleFunc(oidcutils.OIDCEndpointWelKnownOpenIDConfiguration, func(w http.ResponseWriter, r *http.Request) {
-
 			w.Header().Add("Content-Length", "10")
 			w.WriteHeader(http.StatusOK)
 		})
@@ -170,7 +169,7 @@ func TestOidcKeySetDiscovery(t *testing.T) {
 		server.Close()
 	})
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("Fail to fetch keyset", func(t *testing.T) {
 		// Start a mock server to simulate the OIDC discovery endpoint
 		mux := http.NewServeMux()
 		mux.HandleFunc(oidcutils.OIDCEndpointWelKnownOpenIDConfiguration, func(w http.ResponseWriter, r *http.Request) {
@@ -196,14 +195,40 @@ func TestOidcKeySetDiscovery(t *testing.T) {
 		if !strings.Contains(err.Error(), keyset.ErrorFailedToFetchKeyset) {
 			t.Errorf("Expected error message: %s, got: %s", keyset.ErrorFailedToFetchKeyset, err.Error())
 		}
-
-		if set == nil {
-			t.Errorf("Expected keyset, got nil")
-		}
-		if len(set.Keys()) != 0 {
-			t.Errorf("Expected empty keyset, got %d keys", len(set.Keys()))
+		if set != nil {
+			t.Errorf("Expected nil keyset, got: %v", set)
 		}
 		server.Close()
 	})
 
+	t.Run("Success", func(t *testing.T) {
+		// Start a mock server to simulate the OIDC discovery endpoint
+		mux := http.NewServeMux()
+		mux.HandleFunc(oidcutils.OIDCEndpointWelKnownOpenIDConfiguration, func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`{"jwks_uri": "http://` + r.Host + oidcutils.OIDCEndpointJwksUri + `"}`))
+		})
+		mux.HandleFunc(oidcutils.OIDCEndpointJwksUri, func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`{"keys": []}`))
+		})
+		server := httptest.NewServer(mux)
+
+		// Mock implementation of the KeysetDiscovery interface
+		mockKeyset := &keyset.OidcKeysetDiscovery{
+			BaseUrl: server.URL,
+		}
+
+		set, err := mockKeyset.GetKeyset()
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		if set == nil {
+			t.Errorf("Expected keyset, got nil")
+		}
+
+		server.Close()
+	})
 }
