@@ -91,6 +91,31 @@ func TestOidcKeySetDiscovery(t *testing.T) {
 		server.Close()
 	})
 
+	t.Run("Fail to Read Body", func(t *testing.T) {
+		// Start a mock server to simulate the OIDC discovery endpoint
+		mux := http.NewServeMux()
+		mux.HandleFunc(oidcutils.OIDCEndpointWelKnownOpenIDConfiguration, func(w http.ResponseWriter, r *http.Request) {
+
+			w.Header().Add("Content-Length", "10")
+			w.WriteHeader(http.StatusOK)
+		})
+		server := httptest.NewServer(mux)
+
+		// Mock implementation of the KeysetDiscovery interface
+		mockKeyset := &keyset.OidcKeysetDiscovery{
+			BaseUrl: server.URL,
+		}
+
+		set, err := mockKeyset.GetKeyset()
+		if err == nil {
+			t.Errorf("Expected error, got keyset: %v", set)
+		}
+		if !strings.Contains(err.Error(), keyset.ErrorFailedToReadBody) {
+			t.Errorf("Expected error message: %s, got: %s", keyset.ErrorFailedToReadBody, err.Error())
+		}
+		server.Close()
+	})
+
 	t.Run("Keyset Url Empy", func(t *testing.T) {
 		// Start a mock server to simulate the OIDC discovery endpoint
 		mux := http.NewServeMux()
@@ -170,6 +195,13 @@ func TestOidcKeySetDiscovery(t *testing.T) {
 		// Check if the error message contains the expected text
 		if !strings.Contains(err.Error(), keyset.ErrorFailedToFetchKeyset) {
 			t.Errorf("Expected error message: %s, got: %s", keyset.ErrorFailedToFetchKeyset, err.Error())
+		}
+
+		if set == nil {
+			t.Errorf("Expected keyset, got nil")
+		}
+		if len(set.Keys()) != 0 {
+			t.Errorf("Expected empty keyset, got %d keys", len(set.Keys()))
 		}
 		server.Close()
 	})
