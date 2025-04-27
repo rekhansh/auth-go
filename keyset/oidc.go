@@ -3,6 +3,7 @@ package keyset
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -27,7 +28,7 @@ type OidcKeysetDiscovery struct {
 
 func (o *OidcKeysetDiscovery) GetKeyset() (jwk.Set, error) {
 	if o.BaseUrl == "" {
-		return nil, fmt.Errorf(ErrorEmptyBaseUrl)
+		return nil, errors.New(ErrorEmptyBaseUrl)
 	}
 
 	// Get Metadata
@@ -57,7 +58,7 @@ func (o *OidcKeysetDiscovery) GetKeyset() (jwk.Set, error) {
 	}
 
 	if openidconfig.JwksURI == "" {
-		return nil, fmt.Errorf(ErrorKeysetUrlEmpty)
+		return nil, errors.New(ErrorKeysetUrlEmpty)
 	}
 
 	// getkeyset
