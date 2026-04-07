@@ -104,7 +104,7 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 			"message": "missing token",
 		})
 	}
-	token, err := authService.ValidateToken(tokenStr)
+	authClaim, err := authService.ValidateToken(tokenStr)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		w.Header().Set("Content-Type", "application/json")
@@ -114,7 +114,7 @@ func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response["token"] = token
+	response["token"] = authClaim.Token
 
 	// Encode the response as JSON
 	w.Header().Set("Content-Type", "application/json")

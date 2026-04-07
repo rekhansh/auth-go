@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/lestrrat-go/jwx/v3/jwt"
 	"github.com/rekhansh/auth"
+	"github.com/rekhansh/auth/common"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,12 +23,12 @@ func (m *MockAuthProvider) RegisterRoutes(router *mux.Router) {
 	// Mock implementation, no routes to register
 }
 
-func (m *MockAuthProvider) ValidateToken(token string) (jwt.Token, error) {
+func (m *MockAuthProvider) ValidateToken(token string) (*common.AuthClaim, error) {
 	unverified, err := jwt.ParseInsecure([]byte(token))
 	if err != nil {
 		return nil, err
 	}
-	return unverified, nil
+	return &common.AuthClaim{Token: unverified}, nil
 }
 
 func (m *MockAuthProvider) IsTokenSupported(token jwt.Token) bool {

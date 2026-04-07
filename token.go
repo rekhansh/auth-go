@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/lestrrat-go/jwx/v3/jwt"
+	"github.com/rekhansh/auth/common"
 )
 
 const (
@@ -15,7 +16,7 @@ const (
 	ErrorNoProviderFound    = "no provider found for issuer %s"
 )
 
-func (a *AuthService) ValidateToken(tokenString string) (jwt.Token, error) {
+func (a *AuthService) ValidateToken(tokenString string) (*common.AuthClaim, error) {
 	if tokenString == "" {
 		return nil, fmt.Errorf(ErrorTokenEmpty)
 	}

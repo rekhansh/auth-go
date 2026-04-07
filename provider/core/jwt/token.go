@@ -5,10 +5,11 @@ import (
 
 	"github.com/lestrrat-go/jwx/v3/jwk"
 	"github.com/lestrrat-go/jwx/v3/jwt"
+	"github.com/rekhansh/auth/common"
 )
 
 // ValidateToken - validate token
-func (j *JwtAuthProvider) ValidateToken(tokenString string) (jwt.Token, error) {
+func (j *JwtAuthProvider) ValidateToken(tokenString string) (*common.AuthClaim, error) {
 	keyset, err := j.getKeySet()
 	if err != nil {
 		fmt.Printf("failed to get keys")
@@ -22,7 +23,9 @@ func (j *JwtAuthProvider) ValidateToken(tokenString string) (jwt.Token, error) {
 		return nil, err
 	}
 
-	return token, nil
+	return &common.AuthClaim{
+		Token: token,
+	}, nil
 }
 
 func (j *JwtAuthProvider) getKeySet() (jwk.Set, error) {

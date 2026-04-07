@@ -5,6 +5,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/lestrrat-go/jwx/v3/jwt"
+	"github.com/rekhansh/auth/common"
 )
 
 const (
@@ -16,7 +17,7 @@ const (
 type AuthProvider interface {
 	GetID() string
 	RegisterRoutes(router *mux.Router)
-	ValidateToken(token string) (jwt.Token, error)
+	ValidateToken(token string) (*common.AuthClaim, error)
 	IsTokenSupported(token jwt.Token) bool
 }
 

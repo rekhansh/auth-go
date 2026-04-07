@@ -1,9 +1,16 @@
 package auth
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strings"
+
+	"github.com/rekhansh/auth/common"
+)
+
+const (
+	AuthClaimContextKey = "authClaim"
 )
 
 // AuthMiddleware
@@ -20,7 +27,7 @@ func (a *AuthService) AuthMiddleware(next http.Handler) http.Handler {
 		}
 
 		// Validate the token
-		_, err := a.ValidateToken(tokenString)
+		authClaim, err := a.ValidateToken(tokenString)
 		if err != nil {
 			w.WriteHeader(http.StatusUnauthorized)
 			w.Header().Set("Content-Type", "application/json")
@@ -29,6 +36,11 @@ func (a *AuthService) AuthMiddleware(next http.Handler) http.Handler {
 			})
 			return
 		}
+
+		// Store the auth claim in the request context
+		ctx := r.Context()
+		ctx = context.WithValue(ctx, AuthClaimContextKey, authClaim)
+		r = r.WithContext(ctx)
 
 		next.ServeHTTP(w, r)
 	})
@@ -48,4 +60,9 @@ func extractToken(r *http.Request) string {
 	}
 
 	return parts[1]
+}
+
+func GetAuthClaimFromContext(ctx context.Context) (*common.AuthClaim, bool) {
+	authClaim, ok := ctx.Value(AuthClaimContextKey).(*common.AuthClaim)
+	return authClaim, ok
 }

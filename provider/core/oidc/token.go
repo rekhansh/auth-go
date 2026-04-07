@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/lestrrat-go/jwx/v3/jwt"
+	"github.com/rekhansh/auth/common"
 )
 
 const (
@@ -12,7 +13,7 @@ const (
 	ErrorFailedToParseToken = "failed to parse token"
 )
 
-func (o *OidcAuthProvider) ValidateToken(tokenString string) (jwt.Token, error) {
+func (o *OidcAuthProvider) ValidateToken(tokenString string) (*common.AuthClaim, error) {
 	// Get KeySet
 	if o.KeysetDiscovery == nil {
 		return nil, errors.New(ErrorKeysetNotFound)
@@ -30,5 +31,7 @@ func (o *OidcAuthProvider) ValidateToken(tokenString string) (jwt.Token, error) 
 		return nil, fmt.Errorf("%s: %w", ErrorFailedToParseToken, err)
 	}
 
-	return token, nil
+	return &common.AuthClaim{
+		Token: token,
+	}, nil
 }
